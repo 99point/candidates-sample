@@ -1,0 +1,10 @@
+body { font-family: system-ui, sans-serif; background: #f6f6f4; color: #1d1d1b; margin: 0; }
+main { max-width: 640px; margin: 48px auto; padding: 0 16px; }
+h1 { font-size: 22px; }
+form { display: flex; gap: 8px; margin-bottom: 16px; }
+input { padding: 6px 8px; border: 1px solid #ccc; border-radius: 6px; }
+input[name="title"] { flex: 1; }
+button { padding: 6px 12px; border: 0; border-radius: 6px; background: #1d1d1b; color: white; cursor: pointer; }
+ul { list-style: none; padding: 0; }
+li { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: white; border-radius: 8px; margin-bottom: 8px; }
+li.done span { text-decoration: line-through; color: #888; }

@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Taskboard</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main>
+      <h1 id="title">Taskboard</h1>
+      <form id="new-task">
+        <input name="title" placeholder="New task" autocomplete="off" />
+        <input name="due" type="date" />
+        <button>Add</button>
+      </form>
+      <ul id="tasks"></ul>
+    </main>
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>
