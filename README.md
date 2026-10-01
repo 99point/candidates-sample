@@ -6,12 +6,13 @@ in-memory store (`src/store.js`), and a static UI (`public/`).
 ## Build and serve
 
 ```bash
-scripts/setup.sh   # build: installs dependencies (run from the repository root)
+scripts/setup.sh   # build: installs dependencies and seeds data/tasks.json
 npm run dev        # serve: http://localhost:3000 (PORT overrides), restarts on change
 npm test           # node --test
 ```
 
-Data: `data/tasks.json` when present (loaded at setup), otherwise
+Setup copies the bundled `fixtures/tasks-large.json` to `data/tasks.json`; no
+download or credentials are needed. Without setup, the app uses the smaller
 `fixtures/tasks.json`. `APP_TITLE` sets the page title.
 
 This repository is the sample project used by Candidates assessments: the

@@ -4,11 +4,11 @@ import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
-/** Loads tasks from data/tasks.json when present (downloaded at setup), else the bundled fixture. */
+/** Loads the data seeded by scripts/setup.sh, else the smaller bundled fixture. */
 export function loadTasks() {
-  const downloaded = path.join(root, 'data', 'tasks.json');
+  const seeded = path.join(root, 'data', 'tasks.json');
   const fixture = path.join(root, 'fixtures', 'tasks.json');
-  const file = fs.existsSync(downloaded) ? downloaded : fixture;
+  const file = fs.existsSync(seeded) ? seeded : fixture;
   return JSON.parse(fs.readFileSync(file, 'utf8'));
 }
 
