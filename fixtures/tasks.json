@@ -1,6 +1,0 @@
-[
-  { "id": 1, "title": "Write the onboarding guide", "status": "open", "due": "2026-10-03" },
-  { "id": 2, "title": "Review pull request #42", "status": "done", "due": "2026-09-28" },
-  { "id": 3, "title": "Plan the Q4 roadmap", "status": "open", "due": null },
-  { "id": 4, "title": "Fix flaky login test", "status": "open", "due": "2026-09-25" }
-]
