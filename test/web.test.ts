@@ -40,6 +40,18 @@ describe('the board', () => {
     assert.deepEqual(await service.list(), []);
   });
 
+  test('a refused add form comes back filled in as it was sent', async () => {
+    const { app, service } = testBoard();
+    const sent = { title: 'Book the "big" venue', due: '2026-03-20', owner: 'o'.repeat(61), tags: 'events, ops' };
+    const response = await app.request('/tasks', form(sent));
+    assert.equal(response.status, 400);
+    const page = await response.text();
+    assert.match(page, /role="alert">Too big: expected string to have &lt;=60 characters/);
+    const value = (name: string) => new RegExp(`<input name="${name}"[^>]* value="([^"]*)"`).exec(page)?.[1];
+    assert.deepEqual({ title: value('title'), due: value('due'), owner: value('owner'), tags: value('tags') }, { ...sent, title: 'Book the &quot;big&quot; venue' });
+    assert.deepEqual(await service.list(), []);
+  });
+
   test('Done completes the task and comes back to the board', async () => {
     const { app, service } = testBoard([task({ id: 1 })]);
     const response = await app.request('/tasks/1/complete', { method: 'POST' });

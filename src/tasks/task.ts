@@ -18,9 +18,13 @@ export interface Task {
   completedAt?: string;
 }
 
-const title = z.string().trim().min(1, 'title is required').max(200);
+/** The longest title and owner a task takes, once trimmed. */
+export const MAX_TITLE_LENGTH = 200;
+export const MAX_OWNER_LENGTH = 60;
+
+const title = z.string().trim().min(1, 'title is required').max(MAX_TITLE_LENGTH);
 const day = z.iso.date();
-const owner = z.string().trim().min(1).max(60);
+const owner = z.string().trim().min(1).max(MAX_OWNER_LENGTH);
 const tags = z.array(z.string().trim().toLowerCase().min(1).max(30)).max(8);
 
 /** What a client sends to add a task. */

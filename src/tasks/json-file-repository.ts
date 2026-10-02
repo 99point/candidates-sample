@@ -4,6 +4,17 @@ import { z } from 'zod';
 import { MemoryTaskRepository } from './repository.js';
 import { storedTaskSchema, type Task } from './task.js';
 
+/** What the data file holds: every task, and the id the next one gets, so that a removed task's id is never handed out again. */
+export interface StoredBoard {
+  nextId: number;
+  tasks: Task[];
+}
+
+const storedBoardSchema = z.object({
+  nextId: z.number().int().positive(),
+  tasks: z.array(storedTaskSchema),
+}) satisfies z.ZodType<StoredBoard>;
+
 /** The board's tasks in one JSON file: read once when the app starts, written back after every change. */
 export class JsonFileTaskRepository extends MemoryTaskRepository {
   /** The latest write, settled or not. */
@@ -11,14 +22,14 @@ export class JsonFileTaskRepository extends MemoryTaskRepository {
 
   private constructor(
     private readonly file: string,
-    tasks: Task[],
+    board: StoredBoard,
   ) {
-    super(tasks);
+    super(board.tasks, board.nextId);
   }
 
   /** Opens `file`; a file that does not exist yet is an empty board. */
   static async open(file: string): Promise<JsonFileTaskRepository> {
-    return new JsonFileTaskRepository(file, await readTasks(file));
+    return new JsonFileTaskRepository(file, await readBoard(file));
   }
 
   override async add(fields: Omit<Task, 'id'>): Promise<Task> {
@@ -48,21 +59,22 @@ export class JsonFileTaskRepository extends MemoryTaskRepository {
   /** Replaces the file through a temporary one, so a crash never leaves it half written. */
   private async replaceFile(): Promise<void> {
     const temporary = `${this.file}.tmp`;
+    const board: StoredBoard = { nextId: this.nextId, tasks: await this.all() };
     await mkdir(path.dirname(this.file), { recursive: true });
-    await writeFile(temporary, `${JSON.stringify(await this.all(), null, 2)}\n`);
+    await writeFile(temporary, `${JSON.stringify(board, null, 2)}\n`);
     await rename(temporary, this.file);
   }
 }
 
-async function readTasks(file: string): Promise<Task[]> {
+async function readBoard(file: string): Promise<StoredBoard> {
   let text: string;
   try {
     text = await readFile(file, 'utf8');
   } catch (error) {
-    if (error instanceof Error && 'code' in error && error.code === 'ENOENT') return [];
+    if (error instanceof Error && 'code' in error && error.code === 'ENOENT') return { nextId: 1, tasks: [] };
     throw error;
   }
-  const parsed = z.array(storedTaskSchema).safeParse(JSON.parse(text));
-  if (!parsed.success) throw new Error(`${file} does not hold a list of tasks:\n${z.prettifyError(parsed.error)}`);
+  const parsed = storedBoardSchema.safeParse(JSON.parse(text));
+  if (!parsed.success) throw new Error(`${file} does not hold a board:\n${z.prettifyError(parsed.error)}`);
   return parsed.data;
 }

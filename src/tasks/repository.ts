@@ -8,7 +8,7 @@ export interface TaskRepository {
   /** Every task, in id order. */
   all(): Promise<Task[]>;
   get(id: number): Promise<Task | null>;
-  /** Stores a new task under the next id. */
+  /** Stores a new task under an id no task has had before: a removed task's id is never handed out again. */
   add(fields: Omit<Task, 'id'>): Promise<Task>;
   /** Replaces the stored task that has the same id. */
   update(task: Task): Promise<void>;
@@ -19,11 +19,13 @@ export interface TaskRepository {
 /** Tasks held in memory: what the tests use, and the cache behind the JSON file. */
 export class MemoryTaskRepository implements TaskRepository {
   private readonly tasks = new Map<number, Task>();
-  private nextId: number;
+  /** The id the next task gets: past every id handed out so far, removed tasks' included. */
+  protected nextId: number;
 
-  constructor(tasks: readonly Task[] = []) {
+  /** `nextId` carries on a board's ids where it left them; it is never below the one after the highest id in `tasks`. */
+  constructor(tasks: readonly Task[] = [], nextId = 1) {
     for (const task of tasks) this.tasks.set(task.id, structuredClone(task));
-    this.nextId = Math.max(0, ...this.tasks.keys()) + 1;
+    this.nextId = Math.max(nextId, Math.max(0, ...this.tasks.keys()) + 1);
   }
 
   async all(): Promise<Task[]> {

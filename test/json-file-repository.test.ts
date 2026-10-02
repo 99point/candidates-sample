@@ -27,16 +27,26 @@ describe('JsonFileTaskRepository', () => {
     await first.add({ title: 'Throw it away', status: 'open', tags: [], createdAt: '2026-03-01T08:00:00.000Z' });
     await first.update({ ...added, owner: 'ana' });
     await first.remove(2);
-    assert.deepEqual(JSON.parse(await readFile(file, 'utf8')), [{ ...added, owner: 'ana' }]);
+    assert.deepEqual(JSON.parse(await readFile(file, 'utf8')), { nextId: 3, tasks: [{ ...added, owner: 'ana' }] });
 
     const next = await JsonFileTaskRepository.open(file);
     assert.deepEqual(await next.all(), [{ ...added, owner: 'ana' }]);
-    assert.equal((await next.add({ title: 'After restart', status: 'open', tags: [], createdAt: '2026-03-02T08:00:00.000Z' })).id, 2);
   });
 
-  test('a file that is not a task list is refused with the reason', async () => {
+  test('ids are never reused, not even after a restart', async () => {
+    const file = path.join(dir, 'ids', 'tasks.json');
+    const first = await JsonFileTaskRepository.open(file);
+    await first.add({ title: 'Keep', status: 'open', tags: [], createdAt: '2026-03-01T08:00:00.000Z' });
+    await first.add({ title: 'Remove', status: 'open', tags: [], createdAt: '2026-03-01T08:00:00.000Z' });
+    assert.equal(await first.remove(2), true);
+
+    const next = await JsonFileTaskRepository.open(file);
+    assert.equal((await next.add({ title: 'After restart', status: 'open', tags: [], createdAt: '2026-03-02T08:00:00.000Z' })).id, 3);
+  });
+
+  test('a file that is not a board is refused with the reason', async () => {
     const file = path.join(dir, 'broken.json');
-    await writeFile(file, JSON.stringify([task({ id: 1 }), { id: 2, title: 'No status' }]));
-    await assert.rejects(JsonFileTaskRepository.open(file), /broken\.json does not hold a list of tasks[\s\S]*status/);
+    await writeFile(file, JSON.stringify({ nextId: 3, tasks: [task({ id: 1 }), { id: 2, title: 'No status' }] }));
+    await assert.rejects(JsonFileTaskRepository.open(file), /broken\.json does not hold a board[\s\S]*status/);
   });
 });

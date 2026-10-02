@@ -12,8 +12,11 @@ scripts/setup.sh       # installs the locked dependencies, seeds data/tasks.json
 npm run dev            # http://localhost:3000 (PORT overrides), restarts on change
 ```
 
-`npm run seed` resets the board: it writes `fixtures/seed.json` to the data file
-with due dates counted from today.
+To reset the board, stop the server (in an assessment, `npm run dev` in the Dev
+server terminal), run `npm run seed`, then start the server again. The seed
+writes `fixtures/seed.json` to the data file with due dates counted from today;
+a server left running keeps the board it read at startup and writes it back
+over the file at its next change.
 
 ## Check
 

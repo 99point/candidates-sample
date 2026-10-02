@@ -1,9 +1,11 @@
 // Seeds the board: fixtures/seed.json into the data file, with dates counted from today so a fresh
-// board always holds overdue, upcoming and finished work. scripts/setup.sh runs it; run it again to reset the board.
+// board always holds overdue, upcoming and finished work. scripts/setup.sh runs it; run it again to reset the board,
+// with the server stopped: a running server writes the board it read at startup back at its next change.
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { z } from 'zod';
 import { DEFAULT_DATA_FILE, loadEnvFile } from '../src/config.js';
+import type { StoredBoard } from '../src/tasks/json-file-repository.js';
 import { TASK_STATUSES, type Task } from '../src/tasks/task.js';
 
 const seedSchema = z.array(
@@ -41,6 +43,7 @@ const tasks = seed
     }),
   );
 
+const board: StoredBoard = { nextId: tasks.length + 1, tasks };
 await mkdir(path.dirname(file), { recursive: true });
-await writeFile(file, `${JSON.stringify(tasks, null, 2)}\n`);
+await writeFile(file, `${JSON.stringify(board, null, 2)}\n`);
 console.log(`Seeded ${file} with ${tasks.length} tasks`);
